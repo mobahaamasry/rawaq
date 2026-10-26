@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#121428">
+  <meta name="description" content="رواق — على مهلك.">
+  <title>رواق</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="رواق">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preload" href="fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/aref-ruqaa-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <script>
+    // Apply the remembered language and theme before first paint.
+    try {
+      var look = JSON.parse(localStorage.getItem('rawaq-look') || '{}');
+      if (look.theme) document.documentElement.dataset.theme = look.theme;
+      if (look.lang === 'en') { document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr'; }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="css/rawaq.css">
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="pattern-band" aria-hidden="true"></div>
+
+  <div id="splash" aria-hidden="true">
+    <div>
+      <svg class="mark" viewBox="0 0 512 512"><rect width="512" height="512" rx="116" fill="#121428"/><path d="M344.6 310.5A118 118 0 1 1 217.3 126.6 112 112 0 1 0 344.6 310.5Z" fill="#E6B566"/><path d="M318 160c3.6 18.6 9.4 24.4 28 28-18.6 3.6-24.4 9.4-28 28-3.6-18.6-9.4-24.4-28-28 18.6-3.6 24.4-9.4 28-28z" fill="#F2ECE1"/><path d="M150 412c35-22 71-22 106 0s71 22 106 0" fill="none" stroke="#E6B566" stroke-width="11" stroke-linecap="round"/></svg>
+      <div class="word">رواق</div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <h1 id="topTitle"></h1>
+    <div class="top-actions" id="topActions"></div>
+  </header>
+
+  <main id="view" class="view" tabindex="-1"></main>
+
+  <button class="fab" id="fab" data-act="capture-open" aria-label="فرّغ راسك">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v9M7.5 9.5h9"/><path d="M4.5 18.5c2.5-1.7 5-1.7 7.5 0s5 1.7 7.5 0"/></svg>
+  </button>
+  <nav class="nav" id="nav"></nav>
+
+  <div id="sheetRoot"></div>
+  <div id="overlayRoot"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <noscript><p style="padding:24px">رواق بحاجة JavaScript.</p></noscript>
+
+  <script src="js/core.js"></script>
+  <script src="js/exports.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/integrations/payloads.js"></script>
+  <script src="js/integrations/net.js"></script>
+  <script src="js/screens/focus.js"></script>
+  <script src="js/screens/today.js"></script>
+  <script src="js/screens/week.js"></script>
+  <script src="js/screens/work.js"></script>
+  <script src="js/screens/papers.js"></script>
+  <script src="js/screens/applications.js"></script>
+  <script src="js/screens/body.js"></script>
+  <script src="js/screens/sleep.js"></script>
+  <script src="js/screens/faith.js"></script>
+  <script src="js/screens/letters.js"></script>
+  <script src="js/screens/wins.js"></script>
+  <script src="js/screens/questions.js"></script>
+  <script src="js/screens/inbox.js"></script>
+  <script src="js/screens/review.js"></script>
+  <script src="js/screens/more.js"></script>
+  <script src="js/screens/settings.js"></script>
+  <script src="js/screens/reset.js"></script>
+  <script src="js/screens/connection.js"></script>
+  <script src="js/screens/bridges.js"></script>
+  <script src="js/screens/welcome.js"></script>
+  <script src="js/screens/decisions.js"></script>
+  <script src="js/integrations/obsidian.js"></script>
+  <script src="js/integrations/google.js"></script>
+  <script src="js/integrations/mstodo.js"></script>
+  <script src="js/integrations/notion.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
