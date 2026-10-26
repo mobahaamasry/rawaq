@@ -53,7 +53,7 @@
         return true;
       } catch (e) {
         console.warn('[rawaq] sync', id, e && (e.kind || e.message), e && e.body ? String(e.body).slice(0, 200) : '');
-        if (Net.rec(id).enabled) Net.save(id, { lastError: e && e.kind === 'offline' ? 'offline' : e && e.kind === 'auth' ? 'auth' : 'other' });
+        if (Net.rec(id).enabled) Net.save(id, { lastError: e && ['offline', 'auth', 'passphrase'].includes(e.kind) ? e.kind : 'other' });
         return false;
       } finally {
         running.delete(id);

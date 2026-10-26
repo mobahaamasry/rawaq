@@ -63,7 +63,7 @@ test('the one carry-over phrase allowed is the kind one', () => {
 // The network has exactly one door (js/integrations/net.js), and only the optional bridges know remote addresses.
 const rel = (f) => path.relative(root, f).replace(/\\/g, '/');
 const NET_DOOR = ['js/integrations/net.js'];
-const REMOTE_OK = ['js/integrations/google.js', 'js/integrations/mstodo.js', 'js/integrations/notion.js'];
+const REMOTE_OK = ['js/integrations/google.js', 'js/integrations/mstodo.js', 'js/integrations/notion.js', 'js/integrations/gdrive.js'];
 const SW = ['sw.js'];
 
 test('network calls only through the one door', () => {
@@ -117,4 +117,12 @@ test('no bridge reads the tables that never leave (Reset, feelings, open questio
     }
   }
   assert.deepEqual(hits, []);
+});
+
+test('every app script parses (a stray quote would silently stop a whole screen from loading)', () => {
+  const bad = [];
+  for (const f of [...files(path.join(root, 'js'), ['.js']), path.join(root, 'sw.js')]) {
+    try { new Function(fs.readFileSync(f, 'utf8')); } catch (e) { bad.push(rel(f) + ': ' + e.message); }
+  }
+  assert.deepEqual(bad, []);
 });

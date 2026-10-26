@@ -3,7 +3,7 @@
    Requests to other sites (the optional bridges) are never touched or cached.
    After changing any app file, run `node scripts/stamp-sw.js` (VERSION is a hash of the files;
    tests/audit.test.js fails if it's out of date or if a file is missing from this list). */
-const VERSION = 'rawaq-83b3512f4502';
+const VERSION = 'rawaq-6af752b962bb';
 const ASSETS = [
   './',
   'index.html',
@@ -25,6 +25,7 @@ const ASSETS = [
   'js/app.js',
   'js/core.js',
   'js/exports.js',
+  'js/integrations/gdrive.js',
   'js/integrations/google.js',
   'js/integrations/mstodo.js',
   'js/integrations/net.js',
@@ -54,6 +55,7 @@ const ASSETS = [
   'js/screens/work.js',
   'js/seed.js',
   'js/store.js',
+  'js/sync.js',
   'js/ui.js',
   'fonts/aref-ruqaa-arabic-400-normal.woff2',
   'fonts/aref-ruqaa-latin-400-normal.woff2',

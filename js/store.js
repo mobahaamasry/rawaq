@@ -1,5 +1,7 @@
 /* Rawaq store: everything is held in memory and written through to IndexedDB on this device.
-   If IndexedDB isn't available (some file:// setups), it falls back to localStorage. Nothing leaves the device. */
+   If IndexedDB isn't available (some file:// setups), it falls back to localStorage. Nothing leaves the device
+   unless he turns on sync between his devices (js/integrations/gdrive.js). For that, every write stamps `_u`
+   (when it changed) and every delete leaves a small tombstone in meta 'sync-tomb'. */
 (function (root) {
   'use strict';
   const C = root.Core;
@@ -23,6 +25,9 @@
   let db = null;
   let backend = 'none';
   const listeners = new Set();
+  const NO_TOMB = ['meta', 'integrations'];
+  let tomb = {};
+  let rev = 0;
 
   function uid() {
     if (root.crypto && root.crypto.randomUUID) return root.crypto.randomUUID();
@@ -98,6 +103,14 @@
       mem[t].clear();
       for (const r of data[t] || []) mem[t].set(r.id, r);
     }
+    const tm = mem.meta.get('sync-tomb');
+    tomb = tm && tm.map ? { ...tm.map } : {};
+  }
+
+  function saveTomb() {
+    const rec = { id: 'sync-tomb', map: tomb };
+    mem.meta.set(rec.id, rec);
+    persist('meta', 'put', rec);
   }
 
   function snapshot() {
@@ -165,8 +178,11 @@
     get(t, id) { return mem[t].get(id) || null; },
     put(t, rec) {
       if (rec.id == null) rec.id = uid();
+      rec._u = Date.now();
+      if (tomb[t + '/' + rec.id] != null) { delete tomb[t + '/' + rec.id]; saveTomb(); }
       mem[t].set(rec.id, rec);
       persist(t, 'put', rec);
+      rev++;
       notify();
       return rec;
     },
@@ -176,8 +192,38 @@
       return Store.put(t, { ...cur, ...changes });
     },
     del(t, id) {
-      mem[t].delete(id);
+      const had = mem[t].delete(id);
       persist(t, 'delete', id);
+      if (had && !NO_TOMB.includes(t)) { tomb[t + '/' + id] = Date.now(); saveTomb(); }
+      rev++;
+      notify();
+    },
+
+    /* ---------- for sync only ---------- */
+    get rev() { return rev; },
+    tomb() { return { ...tomb }; },
+    // Write what the other device changed, as it is: no new stamps, no new tombstones.
+    // Anything he changed here while the sync was on its way is newer, so it stays (it goes up next time).
+    // `since`: when the sync started; deletions made after that are kept too.
+    applySync(apply, nextTomb, since) {
+      const u = (r) => (r && r._u) || 0;
+      const next = { ...nextTomb };
+      for (const [t, r] of apply.puts) {
+        if (!mem[t] || u(mem[t].get(r.id)) > u(r) || (tomb[t + '/' + r.id] || 0) > u(r)) continue;
+        mem[t].set(r.id, r); persist(t, 'put', r);
+      }
+      for (const [t, id] of apply.dels) {
+        if (!mem[t]) continue;
+        if (u(mem[t].get(id)) > (next[t + '/' + id] || 0)) { delete next[t + '/' + id]; continue; }
+        mem[t].delete(id); persist(t, 'delete', id);
+      }
+      for (const k of Object.keys(tomb)) if (tomb[k] >= (since || Infinity) && tomb[k] > (next[k] || 0)) next[k] = tomb[k];
+      if (apply.settings && u(apply.settings) >= u(mem.meta.get('settings'))) {
+        const s = mergeSettings({ ...apply.settings, id: 'settings' }); mem.meta.set('settings', s); persist('meta', 'put', s);
+      }
+      tomb = next;
+      saveTomb();
+      rev++;
       notify();
     },
 
@@ -211,7 +257,7 @@
       Store.put('meta', { id: 'backup', lastAt: nowIso });
       const snap = snapshot();
       // Backups never carry sign-in tokens; after a restore you simply connect again.
-      snap.integrations = snap.integrations.map(({ token, ...rest }) => rest);
+      snap.integrations = snap.integrations.map(({ token, key, ...rest }) => rest);
       return JSON.stringify(C.makeExport(snap, nowIso), null, 1);
     },
 
@@ -220,6 +266,15 @@
     },
 
     async importTables(tables) {
+      // A restored backup counts as a fresh change, so it reaches his other device too.
+      const now = Date.now();
+      for (const t of TABLES) if (t !== 'meta' && t !== 'integrations') for (const r of tables[t] || []) r._u = now;
+      await Store.replaceAll(tables);
+      mem.meta.set('settings', mergeSettings(mem.meta.get('settings')));
+    },
+
+    // Start this device from the sync file: records keep their own change times.
+    async importTablesRaw(tables) {
       await Store.replaceAll(tables);
       mem.meta.set('settings', mergeSettings(mem.meta.get('settings')));
     },
